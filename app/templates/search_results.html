@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search Results - StackIt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.5s ease;
+      overflow-x: hidden;
+    }
+
+    .dark-mode {
+      background: linear-gradient(135deg, #1e1e2e, #3b0764, #831843);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
+      color: #ffffff;
+    }
+
+    .light-mode {
+      background: linear-gradient(135deg, #3b82f6, #a78bfa, #f472b6);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
+      color: #1f2937;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, background 0.5s ease;
+    }
+
+    .dark-mode .card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .glow-text {
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    }
+
+    .mode-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: transform 0.3s ease;
+      z-index: 10;
+    }
+
+    .mode-toggle:hover {
+      transform: scale(1.2);
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+    }
+  </style>
+</head>
+<body class="light-mode">
+  <div id="particles-js"></div>
+
+  <button class="mode-toggle" onclick="toggleMode()" aria-label="Toggle light/dark mode">
+    <span class="sun-icon">☀️</span>
+    <span class="moon-icon hidden">🌙</span>
+  </button>
+
+  <div class="relative z-10 max-w-4xl mx-auto px-6 py-10">
+    <h1 class="text-3xl font-bold mb-6 glow-text">🔍 Search Results for "{{ query }}"</h1>
+
+    {% if results %}
+      <ul class="space-y-6">
+        {% for user in results %}
+          <li class="card p-5 flex items-center space-x-4">
+            <img src="{{ url_for('static', filename=user.profile_pic or 'profile_pics/default.png') }}"
+                 class="w-14 h-14 rounded-full object-cover border-4 border-white shadow" />
+            <div>
+              <a href="{{ url_for('view_user_profile', username=user.username) }}"
+                 class="text-xl font-semibold text-indigo-200 hover:underline">@{{ user.username }}</a>
+              <p class="text-sm text-gray-300">{{ user.email }}</p>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-lg text-white mt-4">No users found matching your query.</p>
+    {% endif %}
+  </div>
+
+  <script>
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: '#ffffff' },
+        shape: { type: 'circle' },
+        opacity: { value: 0.3, random: true },
+        size: { value: 3, random: true },
+        line_linked: { enable: false },
+        move: { enable: true, speed: 1, direction: 'none', random: true }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
+        modes: { repulse: { distance: 100 }, push: { particles_nb: 4 } }
+      },
+      retina_detect: true
+    });
+
+    function toggleMode() {
+      const body = document.body;
+      const sunIcon = document.querySelector('.sun-icon');
+      const moonIcon = document.querySelector('.moon-icon');
+      body.classList.toggle('light-mode');
+      body.classList.toggle('dark-mode');
+      sunIcon.classList.toggle('hidden');
+      moonIcon.classList.toggle('hidden');
+    }
+
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.remove('light-mode');
+      document.body.classList.add('dark-mode');
+      document.querySelector('.sun-icon').classList.add('hidden');
+      document.querySelector('.moon-icon').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

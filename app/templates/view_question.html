@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ question.title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen text-white p-6">
+
+  <div class="max-w-3xl mx-auto bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-6 shadow-lg">
+    <h2 class="text-3xl font-bold mb-2">{{ question.title }}</h2>
+    <p class="text-sm text-gray-300 mb-4">Asked by <span class="text-blue-200 font-semibold">{{ question.user.username }}</span> on {{ question.date_posted.strftime('%Y-%m-%d') }}</p>
+    <p class="mb-4 text-white">{{ question.description }}</p>
+    <p class="text-sm text-gray-400 italic">Tags: {{ question.tags }}</p>
+  </div>
+
+  <div class="max-w-3xl mx-auto mt-10">
+    <h3 class="text-2xl font-semibold mb-4">Answers</h3>
+
+    {% for answer in answers %}
+  <div class="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-4 mb-4 shadow-md">
+    <p class="mb-2">{{ answer.content }}</p>
+    <p class="text-sm text-gray-300 mb-2">By {{ answer.user.username }} on {{ answer.date_posted.strftime('%Y-%m-%d') }}</p>
+
+    {% if current_user.is_authenticated %}
+      <form action="{{ url_for('upvote_answer', answer_id=answer.id) }}" method="POST">
+        <button type="submit" class="text-green-300 hover:text-green-500 font-semibold">
+          👍 Upvote ({{ answer.upvotes }})
+        </button>
+      </form>
+    {% else %}
+      <p class="text-sm text-gray-400 italic">Log in to upvote</p>
+    {% endif %}
+  </div>
+{% else %}
+  <p class="text-gray-300">No answers yet. Be the first to respond!</p>
+{% endfor %}
+  </div>
+
+  {% if current_user.is_authenticated %}
+    <div class="max-w-3xl mx-auto mt-10 bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6">
+      <h3 class="text-xl font-semibold mb-4">Your Answer</h3>
+      <form method="POST" class="space-y-4">
+        {{ form.hidden_tag() }}
+        <div>
+          {{ form.content.label(class="block text-sm font-medium mb-1") }}
+          {{ form.content(class="w-full p-2 rounded-lg bg-white text-black", rows=4) }}
+        </div>
+        <div>
+          {{ form.submit(class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-semibold") }}
+        </div>
+      </form>
+    </div>
+  {% else %}
+    <p class="text-center mt-6">You must <a href="{{ url_for('login') }}" class="underline text-blue-200 hover:text-blue-100">log in</a> to post an answer.</p>
+  {% endif %}
+
+</body>
+</html>

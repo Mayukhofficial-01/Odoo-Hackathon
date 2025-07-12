@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>StackIt - Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      transition: background 0.5s ease;
+    }
+
+    .dark-mode {
+      background: linear-gradient(135deg, #1e1e2e, #3b0764, #831843);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
+      color: #ffffff;
+    }
+
+    .light-mode {
+      background: linear-gradient(135deg, #3b82f6, #a78bfa, #f472b6);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
+      color: #1f2937;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      padding: 2rem;
+      width: 100%;
+      max-width: 48rem;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.3s ease, background 0.5s ease;
+      overflow-y: auto;
+      max-height: 90vh;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .btn {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.4s ease;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .glow-text {
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    }
+
+    .mode-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    .mode-toggle:hover {
+      transform: scale(1.2);
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+    }
+  </style>
+</head>
+<body class="light-mode">
+  <div id="particles-js"></div>
+  <nav class="fixed top-0 left-0 w-full z-10 bg-white bg-opacity-20 backdrop-blur-md shadow-md py-3 px-6 flex justify-between items-center">
+  <div class="text-xl font-bold text-white">StackIt</div>
+  <div class="space-x-4">
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('index') }}" class="text-white hover:underline">Home</a>
+      <a href="{{ url_for('ask_question') }}" class="text-white hover:underline">Ask</a>
+      <a href="{{ url_for('dashboard') }}" class="text-white hover:underline">My Dashboard</a>
+      <a href="{{ url_for('logout') }}" class="text-red-300 hover:text-red-500 font-semibold">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="text-white hover:underline">Login</a>
+      <a href="{{ url_for('register') }}" class="text-white hover:underline">Register</a>
+    {% endif %}
+  </div>
+</nav>
+  <div class="card">
+    <button class="mode-toggle" onclick="toggleMode()" aria-label="Toggle light/dark mode">
+      <span class="sun-icon">☀️</span>
+      <span class="moon-icon hidden">🌙</span>
+    </button>
+
+    <div class="text-center mb-6">
+      <img src="https://static.vecteezy.com/system/resources/thumbnails/002/135/986/small_2x/chat-wing-logo-design-illustration-free-vector.jpg" alt="StackIt Logo" class="logo mx-auto mb-4 w-24 h-24">
+      <h1 class="text-4xl font-extrabold glow-text">StackIt</h1>
+      <p class="text-sm opacity-80 mt-2">Empowering Collaboration, Redefining Innovation</p>
+    </div>
+
+    
+
+    <div>
+      <h2 class="text-2xl font-bold mb-4">📝 Recent Questions</h2>
+      <form action="{{ url_for('search_users') }}" method="GET" class="mb-6 flex items-center space-x-2">
+  <input
+    type="text"
+    name="q"
+    placeholder="Search users..."
+    class="w-full px-4 py-2 rounded-lg bg-white bg-opacity-20 text-white placeholder-white focus:outline-none"
+    required
+  />
+  <button
+    type="submit"
+    class="btn bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-indigo-700"
+  >
+    🔍 Search
+  </button>
+</form>
+
+      {% if questions %}
+        {% for question in questions %}
+          <div class="bg-white bg-opacity-20 text-white p-4 rounded-lg mb-4 shadow">
+            <h3 class="text-lg font-semibold">
+  <a href="{{ url_for('view_question', question_id=question.id) }}" class="hover:underline text-white">
+    {{ question.title }}
+  </a>
+</h3>
+
+            <p class="text-sm mt-2 line-clamp-3">{{ question.description|safe }}</p>
+            <p class="text-xs mt-2 text-blue-200">
+  Tags: {{ question.tags }} | Posted by {{ question.user.username if question.user else 'Unknown' }} on {{ question.date_posted.strftime('%b %d, %Y') }}
+</p>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-sm text-center opacity-70">No questions posted yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="mt-6 text-center text-xs opacity-60">
+      © 2025 StackIt. All rights reserved.
+    </div>
+  </div>
+
+  <script>
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: '#ffffff' },
+        shape: { type: 'circle' },
+        opacity: { value: 0.3, random: true },
+        size: { value: 3, random: true },
+        line_linked: { enable: false },
+        move: { enable: true, speed: 1, direction: 'none', random: true }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
+        modes: { repulse: { distance: 100 }, push: { particles_nb: 4 } }
+      },
+      retina_detect: true
+    });
+
+    function toggleMode() {
+      const body = document.body;
+      const sunIcon = document.querySelector('.sun-icon');
+      const moonIcon = document.querySelector('.moon-icon');
+      body.classList.toggle('light-mode');
+      body.classList.toggle('dark-mode');
+      sunIcon.classList.toggle('hidden');
+      moonIcon.classList.toggle('hidden');
+    }
+
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.remove('light-mode');
+      document.body.classList.add('dark-mode');
+      document.querySelector('.sun-icon').classList.add('hidden');
+      document.querySelector('.moon-icon').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

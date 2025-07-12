@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>@{{ user.username }}'s Profile - StackIt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.5s ease;
+      overflow-x: hidden;
+    }
+
+    .dark-mode {
+      background: linear-gradient(135deg, #1e1e2e, #3b0764, #831843);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
+      color: #ffffff;
+    }
+
+    .light-mode {
+      background: linear-gradient(135deg, #3b82f6, #a78bfa, #f472b6);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
+      color: #1f2937;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, background 0.5s ease;
+    }
+
+    .dark-mode .card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glow-text {
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    }
+
+    .mode-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      z-index: 10;
+    }
+
+    .mode-toggle:hover {
+      transform: scale(1.2);
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+    }
+  </style>
+</head>
+<body class="light-mode">
+  <div id="particles-js"></div>
+
+  <button class="mode-toggle" onclick="toggleMode()" aria-label="Toggle light/dark mode">
+    <span class="sun-icon">☀️</span>
+    <span class="moon-icon hidden">🌙</span>
+  </button>
+
+  <div class="relative z-10 max-w-4xl mx-auto px-6 py-10">
+    <a href="{{ url_for('index') }}" class="text-indigo-300 hover:underline text-sm mb-6 inline-block">← Back to Home</a>
+
+    <div class="card p-6 flex items-center space-x-6">
+      <img src="{{ url_for('static', filename=user.profile_pic or 'profile_pics/default.png') }}"
+           class="w-24 h-24 rounded-full object-cover border-4 border-white shadow" />
+      <div>
+        <h1 class="text-3xl font-bold glow-text">@{{ user.username }}</h1>
+        <p class="text-sm text-gray-200">{{ user.email }}</p>
+      </div>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="text-2xl font-semibold glow-text mb-4">📝 Questions by {{ user.username }}</h2>
+      {% if questions %}
+        <ul class="space-y-4">
+          {% for q in questions %}
+            <li class="card p-5">
+              <h3 class="font-semibold text-lg text-indigo-200">
+                <a href="{{ url_for('view_question', question_id=q.id) }}" class="hover:underline">{{ q.title }}</a>
+              </h3>
+              <p class="text-sm text-gray-100 mt-1">{{ q.description[:100] }}...</p>
+              <p class="text-xs text-gray-300 mt-1">{{ q.date_posted.strftime('%b %d, %Y') }} | Tags: {{ q.tags }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-gray-200">No questions posted.</p>
+      {% endif %}
+    </div>
+
+    <div class="mt-10">
+      <h2 class="text-2xl font-semibold glow-text mb-4">💬 Answers by {{ user.username }}</h2>
+      {% if answers %}
+        <ul class="space-y-4">
+          {% for a in answers %}
+            <li class="card p-5">
+              <p class="text-sm text-gray-100">{{ a.content[:120] }}...</p>
+              <p class="text-xs text-gray-300 mt-1">
+                On <a href="{{ url_for('view_question', question_id=a.question.id) }}" class="text-blue-300 hover:underline">{{ a.question.title }}</a>
+                | {{ a.date_posted.strftime('%b %d, %Y') }}
+              </p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-gray-200">No answers posted.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: '#ffffff' },
+        shape: { type: 'circle' },
+        opacity: { value: 0.3, random: true },
+        size: { value: 3, random: true },
+        line_linked: { enable: false },
+        move: { enable: true, speed: 1, direction: 'none', random: true }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
+        modes: { repulse: { distance: 100 }, push: { particles_nb: 4 } }
+      },
+      retina_detect: true
+    });
+
+    function toggleMode() {
+      const body = document.body;
+      const sunIcon = document.querySelector('.sun-icon');
+      const moonIcon = document.querySelector('.moon-icon');
+      body.classList.toggle('light-mode');
+      body.classList.toggle('dark-mode');
+      sunIcon.classList.toggle('hidden');
+      moonIcon.classList.toggle('hidden');
+    }
+
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.remove('light-mode');
+      document.body.classList.add('dark-mode');
+      document.querySelector('.sun-icon').classList.add('hidden');
+      document.querySelector('.moon-icon').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
